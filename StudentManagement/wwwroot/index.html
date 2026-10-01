@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Campus — hệ thống quản lý sinh viên full-stack ASP.NET Core">
+  <title>Campus — Student Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div id="app-shell" class="app-shell hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">C</div><div><strong>Campus</strong><small>STUDENT OS</small></div></div>
+    <nav class="nav">
+      <div class="nav-section">WORKSPACE</div>
+      <button class="nav-link active" data-view="dashboard"><span class="nav-ico">⌂</span><span>Tổng quan</span></button>
+      <button class="nav-link" data-view="students"><span class="nav-ico">◎</span><span>Sinh viên</span><span class="nav-count" id="nav-student-count">0</span></button>
+      <button class="nav-link" data-view="audit"><span class="nav-ico">◷</span><span>Nhật ký</span></button>
+      <div class="nav-section">SYSTEM</div>
+      <button class="nav-link" data-view="settings"><span class="nav-ico">⚙</span><span>Cài đặt</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="status-card"><div class="status-dot"></div><div><strong>API Online</strong><span id="api-status">Đang kiểm tra…</span></div></div>
+      <div class="user-card"><div class="user-avatar" id="user-avatar">AD</div><div class="user-copy"><strong id="user-name">Administrator</strong><span id="user-role">Quản trị viên</span></div><button class="ghost-icon" id="logout-btn" title="Đăng xuất">↪</button></div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobile-menu">☰</button>
+      <div class="crumb"><span>Campus</span><b>/</b><strong id="breadcrumb">Tổng quan</strong></div>
+      <div class="topbar-right">
+        <label class="global-search"><span>⌕</span><input id="global-search" placeholder="Tìm kiếm… (Ctrl K)" autocomplete="off"></label>
+        <button class="icon-btn" id="theme-btn" title="Đổi giao diện">☼</button>
+        <button class="icon-btn" id="refresh-btn" title="Làm mới">↻</button>
+      </div>
+    </header>
+
+    <section class="page" id="view-dashboard">
+      <div class="page-head"><div><div class="eyebrow">OVERVIEW</div><h1>Xin chào, <span id="hello-name">bạn</span> 👋</h1><p>Quản lý dữ liệu sinh viên tập trung và theo dõi tình hình học tập.</p></div><div class="page-actions"><span class="date-pill" id="today"></span><button class="btn btn-primary" id="add-student-dashboard">+ Thêm sinh viên</button></div></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon indigo">◎</div><div><span>Tổng sinh viên</span><strong id="stat-total">—</strong><small>Trong hệ thống</small></div></div>
+        <div class="stat-card"><div class="stat-icon green">✓</div><div><span>Đang học</span><strong id="stat-active">—</strong><small id="active-rate">—</small></div></div>
+        <div class="stat-card"><div class="stat-icon amber">!</div><div><span>Chờ xác nhận</span><strong id="stat-pending">—</strong><small>Cần xử lý</small></div></div>
+        <div class="stat-card"><div class="stat-icon violet">★</div><div><span>GPA trung bình</span><strong id="stat-gpa">—</strong><small>Thang điểm 4.0</small></div></div>
+      </div>
+      <div class="dashboard-grid">
+        <section class="panel span-2"><div class="panel-head"><div><h2>Phân bổ sinh viên theo ngành</h2><p>Top ngành có số lượng sinh viên cao nhất</p></div></div><div id="major-chart" class="bar-chart"></div></section>
+        <section class="panel"><div class="panel-head"><div><h2>Trạng thái</h2><p>Tỷ trọng hồ sơ hiện tại</p></div></div><div class="donut-wrap"><div class="donut" id="status-donut"><div><strong id="donut-active">0%</strong><span>đang học</span></div></div><div class="legend" id="status-legend"></div></div></section>
+        <section class="panel span-2"><div class="panel-head"><div><h2>Sinh viên mới</h2><p>5 hồ sơ được tạo gần nhất</p></div><button class="link-btn" data-view="students">Xem tất cả →</button></div><div id="recent-list" class="recent-list"></div></section>
+        <section class="panel"><div class="panel-head"><div><h2>Theo khóa</h2><p>Quy mô theo niên khóa</p></div></div><div id="cohort-list" class="cohort-list"></div></section>
+      </div>
+    </section>
+
+    <section class="page hidden" id="view-students">
+      <div class="page-head"><div><div class="eyebrow">STUDENT DIRECTORY</div><h1>Quản lý sinh viên</h1><p>CRUD đầy đủ, tìm kiếm nhanh, lọc nâng cao và xuất dữ liệu.</p></div><div class="page-actions"><button class="btn" id="import-btn">⇩ Import CSV</button><button class="btn" id="export-btn">⇧ Export CSV</button><button class="btn btn-primary" id="add-student">+ Thêm sinh viên</button><input type="file" id="import-file" accept=".csv" hidden></div></div>
+      <div class="filter-row">
+        <label class="search-box"><span>⌕</span><input id="student-search" placeholder="Tìm theo tên, mã, email, ngành…"></label>
+        <select id="status-filter"><option value="">Tất cả trạng thái</option><option value="Active">Đang học</option><option value="Pending">Chờ xác nhận</option><option value="Leave">Bảo lưu</option><option value="Graduated">Đã tốt nghiệp</option></select>
+        <select id="major-filter"><option value="">Tất cả ngành</option></select>
+        <select id="cohort-filter"><option value="">Tất cả khóa</option></select>
+        <button class="btn" id="reset-filters">Đặt lại</button>
+      </div>
+      <div class="panel table-panel"><div class="table-toolbar"><div class="selection-info"><span id="table-count">—</span><span id="selected-count" class="selected-count hidden">0 đã chọn</span></div><button class="btn btn-danger hidden" id="bulk-delete">Xóa đã chọn</button></div><div class="table-wrap"><table><thead><tr><th class="check-col"><input type="checkbox" id="select-all"></th><th>Sinh viên</th><th data-sort="code">Mã SV</th><th data-sort="major">Ngành</th><th>Khóa</th><th data-sort="gpa">GPA</th><th>Trạng thái</th><th></th></tr></thead><tbody id="student-rows"></tbody></table><div id="student-empty" class="empty-state hidden"><div>⌁</div><strong>Không tìm thấy sinh viên</strong><span>Thử đổi bộ lọc hoặc từ khóa tìm kiếm.</span></div></div><div class="table-foot"><span id="pagination-label">—</span><div class="pagination" id="pagination"></div></div></div>
+    </section>
+
+    <section class="page hidden" id="view-audit">
+      <div class="page-head"><div><div class="eyebrow">AUDIT TRAIL</div><h1>Nhật ký hoạt động</h1><p>Theo dõi thay đổi dữ liệu để dễ kiểm soát và demo nghiệp vụ.</p></div></div>
+      <div class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Người thực hiện</th><th>Thao tác</th><th>Đối tượng</th><th>Chi tiết</th></tr></thead><tbody id="audit-rows"></tbody></table></div><div class="table-foot"><span id="audit-label">—</span><div class="pagination" id="audit-pagination"></div></div></div>
+    </section>
+
+    <section class="page hidden" id="view-settings">
+      <div class="page-head"><div><div class="eyebrow">SYSTEM</div><h1>Cài đặt</h1><p>Thiết lập giao diện và thông tin môi trường của Campus.</p></div></div>
+      <div class="settings-grid"><section class="panel setting-card"><h2>Giao diện</h2><p>Tuỳ chỉnh trải nghiệm hiển thị trên thiết bị này.</p><label class="setting-row"><span>Chế độ tối</span><input type="checkbox" class="toggle" id="dark-toggle"></label></section><section class="panel setting-card"><h2>Thông tin hệ thống</h2><div class="info-list"><div><span>Backend</span><strong>ASP.NET Core / C#</strong></div><div><span>Database</span><strong>SQLite + EF Core</strong></div><div><span>Frontend</span><strong>HTML + CSS + JavaScript</strong></div><div><span>API</span><strong id="settings-api">/api</strong></div></div></section><section class="panel setting-card"><h2>Tài khoản demo</h2><p>Email: <code>admin@campus.edu.vn</code><br>Mật khẩu: <code>Admin@123</code></p><div class="notice">Đây là tài khoản mặc định để chạy đồ án. Khi triển khai thật nên đổi mật khẩu và cấu hình secrets riêng.</div></section></div>
+    </section>
+  </main>
+</div>
+
+<div id="login-screen" class="login-screen"><div class="login-card"><div class="login-brand"><div class="brand-mark">C</div><div><strong>Campus</strong><span>Student Management</span></div></div><div class="login-head"><h1>Đăng nhập</h1><p>Vào hệ thống quản lý sinh viên của bạn.</p></div><form id="login-form"><label>Email<input type="email" id="login-email" value="admin@campus.edu.vn" required></label><label>Mật khẩu<input type="password" id="login-password" value="Admin@123" required></label><label class="remember"><input type="checkbox" id="remember-me"> <span>Ghi nhớ đăng nhập</span></label><button class="btn btn-primary btn-full" type="submit">Đăng nhập vào Campus →</button><div class="login-hint">Tài khoản demo đã được điền sẵn.</div></form><div id="login-error" class="form-error hidden"></div></div></div>
+
+<div id="student-modal" class="modal-backdrop hidden"><div class="modal"><div class="modal-head"><div><div class="eyebrow">STUDENT PROFILE</div><h2 id="modal-title">Thêm sinh viên</h2></div><button class="close-btn" data-close-modal>×</button></div><form id="student-form"><input type="hidden" id="student-id"><div class="form-grid"><label>Họ và tên *<input id="full-name" required placeholder="Nguyễn Văn An"></label><label>Mã sinh viên *<input id="student-code" required placeholder="SV2026001"></label><label>Email *<input id="student-email" required type="email" placeholder="student@campus.edu.vn"></label><label>Số điện thoại<input id="student-phone" placeholder="09xxxxxxxx"></label><label>Ngành học *<select id="student-major" required></select></label><label>Khóa *<input id="student-cohort" name="cohort" required list="cohort-options" autocomplete="off" placeholder="Nhập khóa, ví dụ K27"><datalist id="cohort-options"></datalist></label><label>Trạng thái<select id="student-status"><option value="Active">Đang học</option><option value="Pending">Chờ xác nhận</option><option value="Leave">Bảo lưu</option><option value="Graduated">Đã tốt nghiệp</option></select></label><label>Giới tính<select id="student-gender"><option value="Female">Nữ</option><option value="Male">Nam</option><option value="Other">Khác</option></select></label><label>Ngày sinh<input id="student-dob" type="date"></label><label>GPA (0–4)<input id="student-gpa" type="number" min="0" max="4" step="0.01" value="3.0"></label><label class="span-2">Địa chỉ<input id="student-address" placeholder="TP. Hồ Chí Minh"></label></div><div id="form-message" class="form-error hidden"></div><div class="modal-foot"><button type="button" class="btn" data-close-modal>Hủy</button><button type="submit" class="btn btn-primary" id="save-student-btn">Lưu hồ sơ</button></div></form></div></div>
+
+<div id="student-detail-modal" class="modal-backdrop hidden"><div class="modal detail-modal"><div class="modal-head"><div><div class="eyebrow">STUDENT DETAILS</div><h2>Hồ sơ sinh viên</h2></div><button class="close-btn" data-close-detail>×</button></div><div id="student-detail-content"></div><div class="modal-foot"><button class="btn" data-close-detail>Đóng</button><button class="btn btn-primary" id="detail-edit">Chỉnh sửa</button></div></div></div>
+<div id="toast" class="toast"></div>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
